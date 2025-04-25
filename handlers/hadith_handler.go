@@ -21,6 +21,128 @@ func NewHadithHandler(repo *repository.FileRepository) *HadithHandler {
 	}
 }
 
+// GetAllHadiths godoc
+// @Summary      Get all hadiths
+// @Description  Returns all hadiths with pagination and optional search filtering
+// @Tags         hadiths
+// @Produce      json
+// @Param        page   query     int     false "Page number for pagination (default: 1)"
+// @Param        limit  query     int     false "Items per page for pagination (default: 10)"
+// @Param        q      query     string  false "Search query to filter hadiths by ID (translation)"
+// @Success      200    {object}  models.PaginatedResponse
+// @Failure      500    {object}  models.ErrorResponse
+// @Router       /hadis [get]
+func (h *HadithHandler) GetAllHadiths(c *gin.Context) {
+	// Parse query parameters
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	query := c.Query("q")
+
+	// Set default pagination values
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	// Get all hadiths with pagination and filtering
+	narrators, err := h.repo.GetAvailableNarrators()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Status:  "error",
+			Message: "Failed to get narrators",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	var allHadiths []models.Hadith
+	var totalItems int
+
+	// If a query is provided, search across all narrator collections
+	if query != "" {
+		for _, narrator := range narrators {
+			hadiths, _, err := h.repo.GetHadithsByNarrator(narrator, models.QueryParams{
+				Query: query,
+			})
+			if err == nil {
+				allHadiths = append(allHadiths, hadiths...)
+			}
+		}
+		totalItems = len(allHadiths)
+
+		// Apply pagination
+		startIndex := (page - 1) * limit
+		endIndex := startIndex + limit
+
+		if startIndex >= totalItems {
+			allHadiths = []models.Hadith{}
+		} else {
+			if endIndex > totalItems {
+				endIndex = totalItems
+			}
+			allHadiths = allHadiths[startIndex:endIndex]
+		}
+	} else {
+		// Without search query, collect hadiths across all narrators with pagination
+		var processedCount int
+		for _, narrator := range narrators {
+			if len(allHadiths) >= limit {
+				break
+			}
+
+			// Calculate how many we need from this narrator
+			remainingNeeded := limit - len(allHadiths)
+
+			// Get hadiths from this narrator starting from the right offset
+			narratorParams := models.QueryParams{
+				Page:  1,
+				Limit: remainingNeeded,
+				Query: "",
+			}
+
+			// Adjust page/offset for pagination across narrators
+			if processedCount < (page-1)*limit {
+				_, total, err := h.repo.GetHadithsByNarrator(narrator, models.QueryParams{})
+				if err == nil {
+					if processedCount+total <= (page-1)*limit {
+						// Skip this entire narrator
+						processedCount += total
+						continue
+					} else {
+						// Calculate offset within this narrator
+						offset := (page-1)*limit - processedCount
+						narratorParams.Page = (offset / remainingNeeded) + 1
+					}
+				}
+			}
+
+			hadiths, total, err := h.repo.GetHadithsByNarrator(narrator, narratorParams)
+			if err == nil {
+				allHadiths = append(allHadiths, hadiths...)
+				totalItems += total
+			}
+			processedCount += total
+		}
+	}
+
+	// Calculate pagination values
+	totalPages := (totalItems + limit - 1) / limit // Ceiling division
+
+	c.JSON(http.StatusOK, models.PaginatedResponse{
+		Status:  "success",
+		Message: "All hadiths retrieved successfully",
+		Data:    allHadiths,
+		Pagination: models.Pagination{
+			CurrentPage: page,
+			TotalItems:  totalItems,
+			TotalPages:  totalPages,
+			PerPage:     limit,
+		},
+	})
+}
+
 // GetNarrators godoc
 // @Summary      Get list of available narrators
 // @Description  Returns a list of all available hadith narrators
@@ -64,7 +186,7 @@ func (h *HadithHandler) GetNarrators(c *gin.Context) {
 // @Router       /hadis/{slug} [get]
 func (h *HadithHandler) GetHadithsByNarrator(c *gin.Context) {
 	narrator := c.Param("slug")
-	
+
 	// Parse query parameters
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))

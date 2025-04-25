@@ -2,15 +2,15 @@
 //
 // Documentation of the Hadith API.
 //
-//     Schemes: http
-//     BasePath: /api/v1
-//     Version: 1.0.0
+//	Schemes: http
+//	BasePath: /api/v1
+//	Version: 1.0.0
 //
-//     Consumes:
-//     - application/json
+//	Consumes:
+//	- application/json
 //
-//     Produces:
-//     - application/json
+//	Produces:
+//	- application/json
 //
 // swagger:meta
 package docs
@@ -39,6 +39,52 @@ var doc = `{
     "host": "localhost:8080",
     "basePath": "/api/v1",
     "paths": {
+        "/hadis": {
+            "get": {
+                "description": "Returns all hadiths with pagination and optional search filtering",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hadiths"
+                ],
+                "summary": "Get all hadiths",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number for pagination (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page for pagination (default: 10)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query to filter hadiths by ID (translation)",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PaginatedResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/hadis/{slug}": {
             "get": {
                 "description": "Returns all hadiths from a specific narrator with optional pagination and filtering",

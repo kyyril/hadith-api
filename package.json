@@ -1,0 +1,11 @@
+{
+  "name": "hadith-api",
+  "version": "1.0.0",
+  "description": "API Hadis dengan terjemahan dari 9 perawi",
+  "private": true,
+  "scripts": {
+    "start": "go run main.go",
+    "build": "go build -o main .",
+    "test": "go test ./..."
+  }
+}

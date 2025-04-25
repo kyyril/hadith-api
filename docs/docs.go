@@ -13,6 +13,7 @@
 //	- application/json
 //
 // swagger:meta
+// @host localhost:8080  # This should be updated dynamically based on environment
 package docs
 
 import (

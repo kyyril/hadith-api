@@ -4,8 +4,10 @@
   "description": "API Hadis dengan terjemahan dari 9 perawi",
   "private": true,
   "scripts": {
-    "start": "go run main.go",
-    "build": "go build -o main .",
-    "test": "go test ./..."
+    "dev": "GO_ENV=development go run main.go",
+    "build": "go build -o bin/main main.go",
+    "start": "GO_ENV=production ./bin/main",
+    "deploy:staging": "vercel",
+    "deploy:production": "vercel --prod"
   }
 }

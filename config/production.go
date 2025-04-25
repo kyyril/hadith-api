@@ -11,8 +11,8 @@ func GetProductionConfig() *Config {
 
 	return &Config{
 		Environment: "production",
-		DataDir:     "./data",
+		DataDir:     "../data",
 		Port:        port,
-		BaseURL:     os.Getenv("https://go-hadist.vercel.app"),
+		BaseURL:     os.Getenv("https://go-hadiths.vercel.app"),
 	}
 }

@@ -2,35 +2,32 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/hadith-api/handlers"
 	"github.com/hadith-api/repository"
 	"github.com/hadith-api/routes"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	_ "github.com/hadith-api/docs"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title           Hadith API
-// @version         1.0
-// @description     API Hadis dengan terjemahan dari 9 perawi
-// @termsOfService  http://swagger.io/terms/
-
-// @contact.name   API Support
-// @contact.url    http://www.swagger.io/support
-// @contact.email  support@swagger.io
-
-// @license.name  MIT
-// @license.url   https://opensource.org/licenses/MIT
-
-// @host      localhost:8080
-// @BasePath  /api/v1
-
-// @securityDefinitions.basic  BasicAuth
+// @title Hadith API
+// @version 1.0
+// @description API Hadis dengan terjemahan dari 9 perawi
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+// @host localhost:8080
+// @BasePath /api/v1
+// @securityDefinitions.basic BasicAuth
 func main() {
 	// Set up the repository with the data directory
 	repo := repository.NewFileRepository("./data")
@@ -43,6 +40,11 @@ func main() {
 
 	// Configure CORS
 	r.Use(cors.Default())
+
+	// Root redirects to Swagger UI
+	r.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	})
 
 	// Set up API routes
 	apiV1 := r.Group("/api/v1")

@@ -26,7 +26,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	// Set BASE_URL environment variable for Swagger if not already set
 	if os.Getenv("BASE_URL") == "" {
-		os.Setenv("BASE_URL", "https://hadith-api-nu.vercel.app")
+		os.Setenv("BASE_URL", "https://hadith-api-go.vercel.app")
 	}
 
 	// Get configuration after setting environment variables

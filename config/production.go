@@ -1,8 +1,10 @@
 // Modified config/production.go
 package config
 
-import "os"
-import "path/filepath"
+import (
+	"os"
+	"path/filepath"
+)
 
 // GetProductionConfig returns production environment settings
 func GetProductionConfig() *Config {
@@ -18,7 +20,7 @@ func GetProductionConfig() *Config {
 
 	baseURL := os.Getenv("BASE_URL")
 	if baseURL == "" {
-		baseURL = "https://hadith-api-nu.vercel.app"
+		baseURL = "https://hadith-api-go.vercel.app"
 	}
 
 	return &Config{

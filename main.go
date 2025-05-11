@@ -35,7 +35,7 @@ func main() {
 	}
 
 	// Set up the repository with the data directory
-	repo := repository.NewFileRepository("./data")
+	repo := repository.NewFileRepository("./api/data")
 
 	// Initialize the handlers with the repository
 	hadithHandler := handlers.NewHadithHandler(repo)

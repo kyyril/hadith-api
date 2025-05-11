@@ -4,7 +4,7 @@ package config
 func GetDevelopmentConfig() *Config {
 	return &Config{
 		Environment: "development",
-		DataDir:     "./data",
+		DataDir:     "./api/data",
 		Port:        "8080",
 		BaseURL:     "http://localhost:8080",
 	}

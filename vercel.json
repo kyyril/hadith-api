@@ -1,9 +1,18 @@
 {
-    "version": 2,
-    "builds": [
-      { "src": "api/*.go", "use": "@vercel/go" }
-    ],
-    "routes": [
-      { "src": "/(.*)", "dest": "/api" }
-    ]
+  "version": 2,
+  "builds": [
+    { 
+      "src": "api/index.go", 
+      "use": "@vercel/go",
+      "config": {
+        "includeFiles": ["data/**/*.json"]
+      }
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/api/index.go" }
+  ],
+  "env": {
+    "GO_ENV": "production"
   }
+}

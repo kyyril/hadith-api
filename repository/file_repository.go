@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,11 +17,38 @@ type FileRepository struct {
 	cache   map[string][]models.Hadith
 }
 
+// Improved FileRepository initialization with better error handling
+
 // NewFileRepository creates a new file repository with the specified data directory
 func NewFileRepository(dataDir string) *FileRepository {
 	// Create data directory if it doesn't exist
 	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-		os.MkdirAll(dataDir, 0755)
+		if err := os.MkdirAll(dataDir, 0755); err != nil {
+			// Log the error but continue - this avoids failing immediately
+			log.Printf("Warning: Could not create data directory %s: %v", dataDir, err)
+		}
+	}
+
+	// Log the data directory path for debugging
+	log.Printf("Initializing repository with data directory: %s", dataDir)
+
+	// Check if the directory contains at least one JSON file
+	files, err := os.ReadDir(dataDir)
+	if err != nil {
+		log.Printf("Warning: Could not read data directory %s: %v", dataDir, err)
+	} else {
+		hasJsonFiles := false
+		for _, file := range files {
+			if !file.IsDir() && strings.HasSuffix(file.Name(), ".json") {
+				hasJsonFiles = true
+				log.Printf("Found JSON file: %s", file.Name())
+				break
+			}
+		}
+
+		if !hasJsonFiles {
+			log.Printf("Warning: No JSON files found in data directory %s", dataDir)
+		}
 	}
 
 	return &FileRepository{
@@ -29,11 +57,12 @@ func NewFileRepository(dataDir string) *FileRepository {
 	}
 }
 
-// GetAvailableNarrators returns a list of available narrators based on JSON files
+// GetAvailableNarrators with improved error handling
 func (r *FileRepository) GetAvailableNarrators() ([]string, error) {
 	files, err := os.ReadDir(r.DataDir)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read data directory: %w", err)
+		// More descriptive error message
+		return nil, fmt.Errorf("failed to read data directory %s: %w", r.DataDir, err)
 	}
 
 	var narrators []string
@@ -42,6 +71,11 @@ func (r *FileRepository) GetAvailableNarrators() ([]string, error) {
 			narrator := strings.TrimSuffix(file.Name(), ".json")
 			narrators = append(narrators, narrator)
 		}
+	}
+
+	// Return empty slice instead of nil if no narrators found
+	if len(narrators) == 0 {
+		return []string{}, nil
 	}
 
 	return narrators, nil

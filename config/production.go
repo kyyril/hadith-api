@@ -1,6 +1,8 @@
+// Modified config/production.go
 package config
 
 import "os"
+import "path/filepath"
 
 // GetProductionConfig returns production environment settings
 func GetProductionConfig() *Config {
@@ -9,10 +11,20 @@ func GetProductionConfig() *Config {
 		port = "8080"
 	}
 
+	// For Vercel serverless functions, we need to use absolute paths
+	// __dirname equivalent in Go
+	execDir, _ := os.Getwd()
+	dataDir := filepath.Join(execDir, "data")
+
+	baseURL := os.Getenv("BASE_URL")
+	if baseURL == "" {
+		baseURL = "https://hadith-api-nu.vercel.app"
+	}
+
 	return &Config{
 		Environment: "production",
-		DataDir:     "../data",
+		DataDir:     dataDir,
 		Port:        port,
-		BaseURL:     os.Getenv("https://go-hadiths.vercel.app"),
+		BaseURL:     baseURL,
 	}
 }

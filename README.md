@@ -57,10 +57,10 @@ Each hadith is stored in the following format:
 
 ```bash
 # Clone repository
-git clone https://github.com/kyyril/hadiths-restapi.git
+git clone https://github.com/kyyril/hadith-api.git
 
 # Navigate to the project
-cd hadiths-restapi
+cd hadith-api
 
 # Run the server
 go run main.go

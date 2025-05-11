@@ -1,2 +1,48 @@
-.vercel
-.bin
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Build output
+/bin/
+/build/
+/dist/
+*.out
+
+# Go workspace files
+*.test
+*.log
+*.tmp
+
+# Dependency directories
+vendor/
+
+# Go modules
+go.sum
+go.mod~
+
+# Node modules (for frontend/backend assets)
+node_modules/
+data/
+
+# Vercel deployment output
+.vercel/
+
+# IDE/editor files
+*.swp
+*.swo
+*.idea/
+*.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*

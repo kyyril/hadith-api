@@ -10,7 +10,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	_ "github.com/hadith-api/docs"
+	"github.com/hadith-api/config"
+	_ "github.com/hadith-api/docs" // This will import the docs package and run its init() function
 	"github.com/hadith-api/handlers"
 	"github.com/hadith-api/repository"
 	"github.com/hadith-api/routes"
@@ -23,7 +24,19 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	// Set GO_ENV to production for Vercel
 	os.Setenv("GO_ENV", "production")
 
-	// Log environment variables and paths for debugging
+	// Set BASE_URL environment variable for Swagger if not already set
+	if os.Getenv("BASE_URL") == "" {
+		os.Setenv("BASE_URL", "https://hadith-api-nu.vercel.app")
+	}
+
+	// Get configuration after setting environment variables
+	cfg := config.GetConfig()
+
+	// Log current configuration
+	log.Printf("Environment: %s", cfg.Environment)
+	log.Printf("BaseURL: %s", cfg.BaseURL)
+
+	// Continue with the original logic
 	cwd, _ := os.Getwd()
 
 	// Try multiple possible data directory locations
@@ -60,7 +73,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		for _, file := range files {
 			fileList += file.Name() + ", "
 		}
-
 		errorMsg := fmt.Sprintf("Data directory not found in any expected location. %s", fileList)
 		log.Printf(errorMsg)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -119,6 +131,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			"workingDir": cwd,
 			"dataDir":    dataDir,
 			"jsonFiles":  jsonFiles,
+			"baseURL":    cfg.BaseURL,
+			"env":        cfg.Environment,
 		})
 	})
 
@@ -128,8 +142,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		routes.SetupHadithRoutes(apiV1, hadithHandler)
 	}
 
-	// Swagger documentation
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// Swagger documentation with URL customization
+	url := ginSwagger.URL(fmt.Sprintf("%s/swagger/doc.json", cfg.BaseURL))
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	// Serve the request
 	router.ServeHTTP(w, r)

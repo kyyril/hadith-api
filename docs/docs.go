@@ -1,26 +1,14 @@
-// Package docs Hadith API.
-//
-// Documentation of the Hadith API.
-//
-//	Schemes: http
-//	BasePath: /api/v1
-//	Version: 1.0.0
-//
-//	Consumes:
-//	- application/json
-//
-//	Produces:
-//	- application/json
-//
-// swagger:meta
-// @host localhost:8080  # This should be updated dynamically based on environment
+// Updated docs/swagger.go
 package docs
 
 import (
+	"fmt"
+	"github.com/hadith-api/config"
 	"github.com/swaggo/swag"
 )
 
-var doc = `{
+// The base template for the swagger documentation
+var docTemplate = `{
     "swagger": "2.0",
     "info": {
         "description": "API Hadis dengan terjemahan dari 9 perawi",
@@ -37,7 +25,7 @@ var doc = `{
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "%s",
     "basePath": "/api/v1",
     "paths": {
         "/hadis": {
@@ -288,8 +276,25 @@ var doc = `{
 }`
 
 func init() {
+	// Get the configuration
+	cfg := config.GetConfig()
+
+	// Extract the host part from the baseURL (remove protocol)
+	host := cfg.BaseURL
+
+	// Remove protocol part if present
+	if host[:7] == "http://" {
+		host = host[7:]
+	} else if host[:8] == "https://" {
+		host = host[8:]
+	}
+
+	// Format the doc with the dynamic host
+	formattedDoc := fmt.Sprintf(docTemplate, host)
+
+	// Register the swagger spec
 	swag.Register(swag.Name, &swag.Spec{
 		InfoInstanceName: "swagger",
-		SwaggerTemplate:  doc,
+		SwaggerTemplate:  formattedDoc,
 	})
 }

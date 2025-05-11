@@ -25,7 +25,6 @@ go.mod~
 
 # Node modules (for frontend/backend assets)
 node_modules/
-data/
 
 # Vercel deployment output
 .vercel/
